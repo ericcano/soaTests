@@ -39,23 +39,24 @@ void hexdump(void *ptr, int buflen) {
   }
 }
 
+template<typename T>
+class SoAElement {
+public:
+  SoAElement(size_t i, T(& col)[sz]): idx_(i), col_(col) {}
+  operator T&() { return col_[idx_]; }
+  template <typename T2>
+  T& operator= (const T2& v) { col_[idx_] = v; return col_[idx_]; }
+private:
+  size_t idx_;
+  T (&col_)[sz];
+};
+
 class SoA {
 public:
-  template<typename T>
-  class Element {
-  public:
-    Element(size_t i, T(& col)[sz]): idx_(i), col_(col) {}
-    operator T&() { return col_[idx_]; }
-    template <typename T2>
-    T& operator= (const T2& v) { col_[idx_] = v; return col_[idx_]; }
-  private:
-    size_t idx_;
-    T (&col_)[sz];
-  };
   struct Row {
     Row(size_t idx, int(&i)[sz], float(&f)[sz]): i(idx, i), f(idx, f) {}
-    Element<int> i;
-    Element<float> f;
+    SoAElement<int> i;
+    SoAElement<float> f;
   };
   Row operator[](size_t idx) { return Row(idx, i_, f_); }
 private:
